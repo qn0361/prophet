@@ -1,0 +1,29 @@
+{
+  "name": "prophet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r ts-node/register/transpile-only ./test/*.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/expect": "^24.3.0",
+    "@types/node": "^14.0.13",
+    "js-combinatorics": "^0.5.5",
+    "lodash": "^4.17.15",
+    "node": "^14.4.0",
+    "typescript": "^3.9.5"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/lodash": "^4.14.150",
+    "@types/mocha": "^7.0.2",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
+    "ts-mocha": "^7.0.0",
+    "ts-node": "^8.10.2"
+  }
+}
