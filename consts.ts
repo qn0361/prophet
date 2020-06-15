@@ -41,3 +41,11 @@ export const comboValues = {
 	fourofkind: 8,
 	sflush: 9,
 };
+
+export const phases: {[key: string]: PhaseValue} = {
+	blind: 0,
+	flop: 1,
+	turn: 2,
+	river: 3,
+	sharing: 4,
+};

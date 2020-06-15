@@ -1,67 +1,7 @@
 import {omit, keys, values, mapValues, pick, omitBy, random, shuffle} from 'lodash';
-import {deck as defaultDeck} from './consts';
+import {deck as defaultDeck, phases} from './consts';
 import {pullTuple, sum, pickByIndex, sumValues, getCircularIndex, getCircular} from './utils';
 import {getHighestCombo, compareCombos} from './combos';
-
-type GameEvent = {
-	type: '',
-	data: {
-
-	},
-};
-
-type Move = {
-	type: 'bet' | 'fold';
-	value?: number;
-};
-
-enum Phase {
-	blind,
-	flop,
-	turn,
-	river,
-	sharing,
-};
-
-type Action = {
-	type: 'move',
-	data: Move,
-};
-type Subscriber = (event: GameEvent) => void;
-
-type Id = string;
-type Banks = {[key: string]: number};
-type Bets = {[key: string]: number};
-type Stacks = {[key: string]: number};
-type Hands = {[key: string]: Hand};
-type Folders = {[key: string]: boolean};
-type Blinds = [number, number];
-
-type State = {
-	// are being updated on every move
-	acting: Id,
-	active: Id[],
-	banks: Banks,
-	bets: Bets,
-	folders: Folders,
-	moves: Move[],
-	stacks: Stacks,
-
-	// are being updated on a board update
-	deck: Card[],
-	board: Card[],
-	phase: Phase,
-
-	// are being updated on a round only
-	chip: number,
-	blinds: Blinds,
-	hands: Hands,
-
-	// are being updated not so often
-	actors: Id[],
-
-	// are not being updated
-};
 
 function getCircularNextIndex(arr: any[], index: number) {
 	const n = arr.length;
@@ -79,6 +19,7 @@ function getCircularNext(arr: any[], index: number) {
 
 function areBetsMade(bets: number[], stacks: number[]) {
 	if (bets.length === 0) return true;
+	if (bets.some(bet => bet === null)) return false;
 
 	let last = bets[0];
 
@@ -90,9 +31,7 @@ function areBetsMade(bets: number[], stacks: number[]) {
 	return true;
 }
 
-type ShareState = Pick<State, 'banks' | 'folders' | 'board' | 'hands'>;
-
-export function share(state: ShareState): Stacks {
+export function share(state: State): Stacks {
 	const {banks, folders, board, hands} = state;
 	let between: {[key: string]: boolean} = mapValues(omit(banks, keys(folders)), () => true);
 	let shares: Banks = mapValues(banks, () => 0);
@@ -142,18 +81,17 @@ export function share(state: ShareState): Stacks {
 }
 
 function isNextBB(state: State): boolean {
-	if (state.phase !== Phase.blind) return false;
+	if (state.phase !== phases.blind) return false;
 
 	const {actors, acting, bets, blinds, chip} = state;
-	const actIndex = actors.findIndex((actor) => actor === acting);
-	const isNextBbPlayer = getCircularNext(actors, chip + 2) === actIndex;
+	const isBBActing = getCircular(actors, chip + 2) === acting;
 	const isMaxBetBb = Math.max(...values(bets)) === blinds[1];
 
-	return isNextBbPlayer && isMaxBetBb;
+	return isBBActing && isMaxBetBb;
 }
 
 function isNextGame(state: State): boolean {
-	return state.phase === Phase.sharing;
+	return state.phase === phases.sharing;
 }
 
 function getNewGameState(state: State): State {
@@ -190,7 +128,7 @@ function getNewGameState(state: State): State {
 			[actor]: value,
 		};
 	}, {});
-	const bets = {...banks};
+	const bets = mapValues(banks, (bank) => bank || null);
 
 	// TODO: replace with default state
 	return {
@@ -206,7 +144,7 @@ function getNewGameState(state: State): State {
 		folders: {},
 		hands,
 		moves: [],
-		phase: Phase.blind,
+		phase: phases.blind,
 		stacks,
 	};
 }
@@ -223,8 +161,8 @@ function isNextPhase(state: State): boolean {
 
 function reduceDeckBoard(state: State) {
 	const {board, deck, phase} = state;
-	const amount = phase === Phase.blind ? 3 :
-		phase === Phase.river ? 0 : 1;
+	const amount = phase === phases.blind ? 3 :
+		phase === phases.river ? 0 : 1;
 	const {tuple, rest} = pullTuple(deck, amount);
 
 	return {
@@ -236,14 +174,14 @@ function reduceDeckBoard(state: State) {
 function getNewPhaseState(state: State): State {
 	if (!isNextPhase(state)) return state;
 
-	const {bets, phase} = state;
-	const newBets = mapValues(bets, () => 0);
+	const bets = mapValues(state.bets, () => null);
+	const phase = state.phase + 1 as PhaseValue;
 	const {deck, board} = reduceDeckBoard(state);
 
 	return {
 		...state,
 		board,
-		bets: newBets,
+		bets,
 		deck,
 		phase,
 	};
@@ -292,11 +230,14 @@ function reduceFolders(state: State, move: Move): Folders {
 
 function reduceBets(state: State, move: Move): Bets {
 	const {acting, bets} = state;
-	const {value = 0} = move;
+	const {type, value = 0} = move;
 
-	return {
+	return type === 'bet' ? {
 		...bets,
 		[acting]: bets[acting] + value,
+	} : {
+		...bets,
+		[acting]: null,
 	};
 }
 
@@ -306,7 +247,7 @@ function reduceStacks(state: State, move: Move): Stacks {
 
 	return {
 		...stacks,
-		[acting]: stacks[acting] + value,
+		[acting]: stacks[acting] - value,
 	};
 }
 
@@ -314,31 +255,24 @@ function reduceMoves(state: State, move: Move): Move[] {
 	return [...state.moves, move];
 }
 
-function getNewState(state: State, action: Action): State {
-	if (action.type === 'move') {
-		const {data: move} = action;
-
-		return {
-			...state,
-			acting: reduceActing(state, move),
-			active: reduceActive(state, move),
-			banks: reduceBanks(state, move),
-			bets: reduceBets(state, move),
-			folders: reduceFolders(state, move),
-			moves: reduceMoves(state, move),
-			stacks: reduceStacks(state, move),
-		};
-	}
-
-	return state;
+function getNewState(state: State, move: Move): State {
+	return {
+		...state,
+		acting: reduceActing(state, move),
+		active: reduceActive(state, move),
+		banks: reduceBanks(state, move),
+		bets: reduceBets(state, move),
+		folders: reduceFolders(state, move),
+		moves: reduceMoves(state, move),
+		stacks: reduceStacks(state, move),
+	};
 }
 
-const reducer = (state: State, action: Action): State => {
+export const reducer = (state: State, action: Move): State => {
 	return getNewGameState(getNewPhaseState(getNewState(state, action)));
 };
 
 export const game = (opts: any) => {
-	let subscribers: Subscriber[] = [];
 	let players = [];
 
 	let options = {
@@ -355,6 +289,6 @@ export const game = (opts: any) => {
 		board: [],
 		chip: 0,
 		moves: [],
-		phase: Phase.blind,
+		phase: phases.blind,
 	};
 }

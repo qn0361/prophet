@@ -19,3 +19,42 @@ type ComparableCombo = {
 	value: number,
 	qualities: number[],
 };
+
+type Move = {
+	type: 'bet' | 'fold';
+	value?: number;
+};
+
+type Id = string;
+type Banks = {[key: string]: number};
+type Bets = {[key: string]: number};
+type Stacks = {[key: string]: number};
+type Hands = {[key: string]: Hand};
+type Folders = {[key: string]: boolean};
+type Blinds = [number, number];
+type PhaseValue = 0 | 1 | 2 | 3 | 4 | 5;
+type State = {
+	// are being updated on every move
+	acting: Id,
+	active: Id[],
+	banks: Banks,
+	bets: Bets,
+	folders: Folders,
+	moves: Move[],
+	stacks: Stacks,
+
+	// are being updated on a board update
+	deck: Card[],
+	board: Card[],
+	phase: PhaseValue,
+
+	// are being updated on a round only
+	chip: number,
+	blinds: Blinds,
+	hands: Hands,
+
+	// are being updated not so often
+	actors: Id[],
+
+	// are not being updated
+};

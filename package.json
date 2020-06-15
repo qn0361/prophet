@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register/transpile-only ./test/*.ts"
+    "test": "TS_NODE_COMPILER_OPTIONS='{\"downlevelIteration\":true}' mocha --require ts-node/register/transpile-only 'test/**/*.spec.{ts,tsx}'"
   },
   "author": "",
   "license": "ISC",
