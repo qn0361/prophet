@@ -1,26 +1,35 @@
 import {qualities, linked, comboValues, qualityValues} from './consts';
-import {groupBy, flatten, values, isEqual} from 'lodash';
-import {getHighestQualityWeight, last} from './utils';
+import {groupBy, flatten, values, first, last} from 'lodash';
+import {getHighestQualityWeight, swap} from './utils';
 
-const isStraightFlush = (cards: Card[]) => {
-	if (cards.length < 5) {
-		return false;
-	}
-	let suit = cards[0].suit;
+const getStraight = (isFalse: (a: Card, b: Card) => boolean) => {
+	return (cards: Card[]) => {
+		if (cards.length < 5) {
+			return false;
+		}
+		if (first(cards).quality === '2' && last(cards).quality === 'A') {
+			cards = [cards[4], ...cards.slice(0, -1)];
+		}
 
-	for (let i = 0; i < cards.length; i++) {
-		const card = cards[i];
-		if (card.suit !== suit) return false;
-		if (!cards[i + 1]) return true;
+		for (let i = 0; i < cards.length; i++) {
+			if (!cards[i + 1]) return true;
 
-		const next = cards[i + 1];
-		const {next: nextQuality} = linked.find((c) => c.quality === card.quality);
+			const card = cards[i];
+			const next = cards[i + 1];
 
-		if (next.quality !== nextQuality) return false;
-	}
+			if (isFalse(card, next)) return false;
+		}
+	};
 }
 
-const isFlush = (cards: Card[]) => {
+export const isStraightFlush = getStraight((a, b) => {
+	const {quality, suit} = a;
+	const {next: nextQuality} = linked[quality];
+
+	return nextQuality !== b.quality || suit !== b.suit;
+});
+
+export const isFlush = (cards: Card[]) => {
 	if (cards.length < 5) return false;
 
 	let suit = cards[0].suit;
@@ -28,23 +37,12 @@ const isFlush = (cards: Card[]) => {
 	return cards.every((card) => card.suit === suit);
 };
 
-const isStraight = (cards: Card[]) => {
-	if (cards.length < 5) {
-		return false;
-	}
+export const isStraight = getStraight((a, b) => {
+	const {quality} = a;
+	const {next: nextQuality} = linked[quality];
 
-	for (let i = 0; i < cards.length; i++) {
-		if (!cards[i + 1]) return true;
-
-		const card = cards[i];
-		const next = cards[i + 1];
-		const {next: nextQuality} = linked.find((c) => c.quality === card.quality);
-
-		if (next.quality !== nextQuality) return false;
-	}
-}
-
-
+	return nextQuality !== b.quality;
+});
 
 export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 	const cards = unsorted.sort((a, b) => {

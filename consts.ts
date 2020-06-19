@@ -1,16 +1,18 @@
 export const suits: Suit[] = ['clubs', 'diamonds', 'hearts', 'spades'];
 export const qualities: Quality[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-export const linked = qualities.map((quality, index, self) => {
+export const linked: {[key in Quality]: {prev: Quality, next: Quality}} = qualities.reduce((acc, quality, index, self) => {
 	const last = self.length - 1;
 	const isFirst = index === 0;
 	const isLast = index === last;
 
 	return {
-		quality,
-		next: isLast ? self[0] : self[index + 1],
-		prev: isFirst ? self[last] : self[index - 1],
+		...acc,
+		[quality]: {
+			next: isLast ? self[0] : self[index + 1],
+			prev: isFirst ? self[last] : self[index - 1],
+		},
 	};
-});
+}, {} as any);
 
 export const deck: Deck = qualities.reduce((result, quality) => {
 	const set: Card[] = suits.map((suit) => ({

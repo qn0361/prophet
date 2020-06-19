@@ -6,6 +6,14 @@ export const sflush: Card[] = [
 	{ suit: 'spades', quality: 'A' },
 ];
 
+export const minorSflush: Card[] = [
+	{ suit: 'spades', quality: '2' },
+	{ suit: 'spades', quality: '3' },
+	{ suit: 'spades', quality: '4' },
+	{ suit: 'spades', quality: '5' },
+	{ suit: 'spades', quality: 'A' },
+];
+
 export const fourofkind: Card[] = [
 	{suit: 'spades', quality: '10'},
 	{suit: 'clubs', quality: '10'},
@@ -35,6 +43,14 @@ export const straight: Card[] = [
 	{ suit: 'spades', quality: 'J' },
 	{ suit: 'spades', quality: 'Q' },
 	{ suit: 'spades', quality: 'K' },
+	{ suit: 'spades', quality: 'A' },
+];
+
+export const minorStraight: Card[] = [
+	{ suit: 'diamonds', quality: '2' },
+	{ suit: 'spades', quality: '3' },
+	{ suit: 'spades', quality: '4' },
+	{ suit: 'spades', quality: '5' },
 	{ suit: 'spades', quality: 'A' },
 ];
 

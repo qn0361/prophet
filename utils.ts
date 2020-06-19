@@ -1,5 +1,5 @@
 import {qualityValues} from './consts';
-import {pick, values, keys, assignWith} from 'lodash';
+import {pick, values, assignWith, last} from 'lodash';
 
 export const {combination, bigCombination} = (function () {
     'use strict';
@@ -261,10 +261,6 @@ export const {combination, bigCombination} = (function () {
     return {combination, bigCombination};
 })();
 
-export const last = <T>(arr: T[]): T => {
-    return arr[arr.length - 1];
-}
-
 export const getHighestQuality = (sorted: Card[]): Quality => {
     try {
         return last(sorted).quality;
@@ -324,4 +320,10 @@ export function pickByIndex<T extends unknown>(a: T[], indexes: number[]) {
 
 export const getHighestQualityWeight = (sorted: Card[]): number => {
     return qualityValues[getHighestQuality(sorted)];
+}
+
+export const swap = <T extends unknown>(a: T[], i: number, j: number) => {
+    [a[i], a[j]] = [a[j], a[i]];
+
+    return a;
 }
