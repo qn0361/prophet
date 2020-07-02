@@ -193,7 +193,7 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 
 		return {
 			value: comboValue,
-			qualities: [comboQuality, ...kickerQualities.slice(-2)],
+			qualities: [comboQuality, ...kickerQualities.slice(-2).reverse()],
 		};
 	}
 
@@ -214,7 +214,7 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 		const combo = last(pairs);
 		const comboValue = comboValues['pair'];
 		const comboQuality = getHighestQualityWeight(combo);
-		const kickerQualities = flatten(kickers).slice(-3).map((kicker) => {
+		const kickerQualities = flatten(kickers).slice(-3).reverse().map((kicker) => {
 			return qualityValues[kicker.quality];
 		});
 
@@ -226,7 +226,7 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 
 	return {
 		value: comboValues['kicker'],
-		qualities: flatten(kickers).slice(-5).map((kicker) => {
+		qualities: flatten(kickers).slice(-5).reverse().map((kicker) => {
 			return qualityValues[kicker.quality];
 		}),
 	}
