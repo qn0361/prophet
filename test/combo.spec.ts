@@ -4,29 +4,7 @@ import {minorStraight, straight, minorSflush, sflush, fullhouse} from '../preset
 import {comboValues} from '../consts';
 import "mocha";
 
-describe('getHighestCombo', () => {
-	it('should recognize straight', () => {
-		expect(isStraight(straight)).to.be.equal(true);
-	});
 
-	it('should recognize straight from A to 5', () => {
-		expect(isStraight(minorStraight)).to.be.equal(true);
-	});
-
-	it('should tell fullhouse is not a straight', () => {
-		expect(isStraight(fullhouse)).to.be.equal(false);
-	})
-});
-
-describe('isStraightFlush', () => {
-	it('should recognize straight flush', () => {
-		expect(isStraightFlush(sflush)).to.be.equal(true);
-	});
-
-	it('should recognize straight flush from A to 5', () => {
-		expect(isStraightFlush(minorSflush)).to.be.equal(true);
-	});
-});
 
 describe('getHighestCombo', () => {
 	it('kiker', () => {
@@ -85,7 +63,7 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "2"},
 			{"suit": "hearts", "quality": "A"},
 			{"suit": "hearts", "quality": "3"},
-			{"suit": "hearts", "quality": "4"},		
+			{"suit": "hearts", "quality": "4"},
 		]
 		const output = {
 			value: comboValues.set,
@@ -101,7 +79,7 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "2"},
 			{"suit": "hearts", "quality": "6"},
 			{"suit": "hearts", "quality": "3"},
-			{"suit": "hearts", "quality": "4"},		
+			{"suit": "hearts", "quality": "4"},
 		]
 		const output = {
 			value: comboValues.straight,
@@ -117,7 +95,7 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "2"},
 			{"suit": "hearts", "quality": "A"},
 			{"suit": "hearts", "quality": "3"},
-			{"suit": "hearts", "quality": "4"},		
+			{"suit": "hearts", "quality": "4"},
 		]
 		const output = {
 			value: comboValues.straight,
@@ -133,7 +111,7 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "K"},
 			{"suit": "hearts", "quality": "A"},
 			{"suit": "hearts", "quality": "3"},
-			{"suit": "hearts", "quality": "4"},		
+			{"suit": "hearts", "quality": "4"},
 		]
 		const output = {
 			value: comboValues.flush,
@@ -149,7 +127,7 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "K"},
 			{"suit": "hearts", "quality": "A"},
 			{"suit": "diamonds", "quality": "7"},
-			{"suit": "clubs", "quality": "7"},		
+			{"suit": "clubs", "quality": "7"},
 		]
 		const output = {
 			value: comboValues.fullhouse,
@@ -165,27 +143,27 @@ describe('getHighestCombo', () => {
 			{"suit": "hearts", "quality": "K"},
 			{"suit": "hearts", "quality": "7"},
 			{"suit": "diamonds", "quality": "7"},
-			{"suit": "clubs", "quality": "7"},		
+			{"suit": "clubs", "quality": "7"},
 		]
 		const output = {
 			value: comboValues.fourofkind,
-			qualities: [6],
-		}
+			qualities: [6, 12],
+		};
 		expect(getHighestCombo(input)).to.deep.equal(output);
 	})
 	it('sflush', () => {
 		const input = [
-			{"suit": "hearts", "quality": "5"},
+			{"suit": "hearts", "quality": "6"},
 			{"suit": "diamonds", "quality": "K"},
 			{"suit": "clubs", "quality": "K"},
 			{"suit": "hearts", "quality": "2"},
 			{"suit": "hearts", "quality": "5"},
 			{"suit": "hearts", "quality": "3"},
-			{"suit": "hearts", "quality": "4"},		
+			{"suit": "hearts", "quality": "4"},
 		]
 		const output = {
 			value: comboValues.sflush,
-			qualities: [4],
+			qualities: [5],
 		}
 		expect(getHighestCombo(input)).to.deep.equal(output);
 	})

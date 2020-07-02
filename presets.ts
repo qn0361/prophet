@@ -1,8 +1,8 @@
 export const sflush: Card[] = [
-	{ suit: 'spades', quality: '10' },
-	{ suit: 'spades', quality: 'J' },
-	{ suit: 'spades', quality: 'Q' },
-	{ suit: 'spades', quality: 'K' },
+	{ suit: 'spades', quality: '2' },
+	{ suit: 'spades', quality: '3' },
+	{ suit: 'spades', quality: '4' },
+	{ suit: 'spades', quality: '5' },
 	{ suit: 'spades', quality: 'A' },
 ];
 

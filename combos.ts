@@ -1,48 +1,77 @@
 import {qualities, linked, comboValues, qualityValues} from './consts';
-import {groupBy, flatten, values, first, last} from 'lodash';
+import {groupBy, flatten, values, first, last, keys, takeRightWhile} from 'lodash';
 import {getHighestQualityWeight, swap} from './utils';
 
-const getStraight = (isFalse: (a: Card, b: Card) => boolean) => {
-	return (cards: Card[]) => {
-		if (cards.length < 5) {
-			return false;
-		}
-		if (first(cards).quality === '2' && last(cards).quality === 'A') {
-			cards = [cards[4], ...cards.slice(0, -1)];
+
+const getStraight = (isTrue: (card: Card, prev: Card) => boolean) => {
+	return (sorted: Card[]) => {
+		const isNot = {
+			is: false,
+			combo: undefined,
+		};
+
+		if (sorted.length < 5) {
+			return isNot;
 		}
 
-		for (let i = 0; i < cards.length; i++) {
-			if (!cards[i + 1]) return true;
+		const aces = takeRightWhile(sorted, (card: Card) => card.quality === 'A');
+		const cards = [...aces, ...sorted];
+		let counter = 1;
 
+		for (let i = cards.length - 1; i > 0; i--) {
 			const card = cards[i];
-			const next = cards[i + 1];
+			const prev = cards[i - 1];
 
-			if (isFalse(card, next)) return false;
+			if (isTrue(card, prev)) counter += 1;
+			else counter = 1;
+
+			if (counter === 5) {
+				return {
+					is: true,
+					combo: cards.slice(i - 1, i - 1 + counter),
+				};
+			}
 		}
+
+		return isNot;
 	};
 }
 
-export const isStraightFlush = getStraight((a, b) => {
-	const {quality, suit} = a;
-	const {next: nextQuality} = linked[quality];
+export const isStraightFlush = getStraight((card: Card, prev: Card) => {
+	const {quality, suit} = card;
 
-	return nextQuality !== b.quality || suit !== b.suit;
+	return linked[quality].prev === prev.quality && suit === prev.suit;
+});
+
+export const isStraight = getStraight((card: Card, prev: Card) => {
+	const {quality} = card;
+
+	return linked[quality].prev === prev.quality;
 });
 
 export const isFlush = (cards: Card[]) => {
-	if (cards.length < 5) return false;
+	const isNot = {
+		is: false,
+		combo: undefined,
+	};
 
-	let suit = cards[0].suit;
+	if (cards.length < 5) {
+		return isNot;
+	}
 
-	return cards.every((card) => card.suit === suit);
+	const groups = groupBy(cards, (card) => {
+		return card.suit;
+	});
+
+	const flushed = keys(groups).find((suit) => {
+		return groups[suit].length >= 5;
+	});
+
+	return flushed ? {
+		is: true,
+		combo: groups[flushed].slice(-5),
+	} : isNot;
 };
-
-export const isStraight = getStraight((a, b) => {
-	const {quality} = a;
-	const {next: nextQuality} = linked[quality];
-
-	return nextQuality !== b.quality;
-});
 
 export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 	const cards = unsorted.sort((a, b) => {
@@ -51,13 +80,18 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 
 		return aIndex - bIndex;
 	});
-	let straightFlushes: Card[][] = [];
-	let flushes: Card[][] = [];
-	let straights: Card[][] = [];
+
+	const {is: isSflush, combo: sflush} = isStraightFlush(cards);
+
+	if (isSflush) {
+		return {
+			value: comboValues.sflush,
+			qualities: [getHighestQualityWeight(sflush)],
+		};
+	}
+
 	let fourOfKinds: Card[][] = [];
-	let fullHouses: Card[][] = [];
 	let sets: Card[][] = [];
-	let twoPairss: Card[][] = [];
 	let pairs: Card[][] = [];
 	let kickers: Card[][] = [];
 	let ofSameQualities = [cards[0]];
@@ -104,44 +138,21 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 				commit();
 			}
 		}
-		const fiveTuple = cards.slice(i, i + 5);
-		const gotStraightFlush = isStraightFlush(fiveTuple);
-		const gotFlush = isFlush(fiveTuple);
-		const gotStraight = isStraight(fiveTuple);
-
-		 if (gotStraightFlush) straightFlushes = [fiveTuple];
-		 else if (gotFlush) flushes = [fiveTuple];
-		 else if (gotStraight) straights = [fiveTuple];
 	}
 
-	// combining fullHouses and two pairs
-	const gotFullHouse = sets.length > 0 && pairs.length > 0;
-	if (gotFullHouse) {
-		fullHouses = [[...sets[sets.length - 1], ...pairs[pairs.length -1]]];
-		sets = [];
-		pairs = [];
-	}
 
-	const gotTwoPairs = pairs.length > 1;
-	if (gotTwoPairs) {
-		twoPairss = [[...pairs[pairs.length -2], ...pairs[pairs.length - 1]]];
-		pairs = [];
-	}
-
-	if (straightFlushes.length > 0) {
-		const combo = straightFlushes[0];
-
-		return {
-			value: comboValues['sflush'],
-			qualities: [getHighestQualityWeight(combo)],
-		};
-	}
 
 	if (fourOfKinds.length > 0) {
 		const combo = last(fourOfKinds);
 		const comboValue = comboValues['fourofkind'];
 		const comboQuality = getHighestQualityWeight(combo);
-		const kickerQuality = getHighestQualityWeight(last(kickers));
+		const caseKickers = [
+			...(sets.length ? last(sets) : []),
+			...(pairs.length ? last(pairs) : []),
+			...(kickers.length ? last(kickers) : []),
+		];
+
+		const kickerQuality = getHighestQualityWeight(caseKickers);
 
 		return {
 			value: comboValue,
@@ -149,8 +160,15 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 		};
 	}
 
-	if (fullHouses.length > 0) {
-		const combo = fullHouses[0];
+	// got fullhouse
+	if (sets.length > 1 || sets.length > 0 && pairs.length > 0) {
+		const combo = sets.length > 1 ? [
+			...sets[sets.length - 1],
+			...sets[sets.length - 2].slice(0, 2),
+		] : [
+			...sets[sets.length - 1],
+			...pairs[pairs.length -1],
+		];
 		const comboValue = comboValues['fullhouse'];
 		const [pair, set] = values(groupBy(combo, (card) => card.quality)).sort((a, b) => a.length - b.length);
 		const qualities = [getHighestQualityWeight(set), getHighestQualityWeight(pair)];
@@ -161,25 +179,21 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 		};
 	}
 
-	if (flushes.length > 0) {
-		const combo = last(flushes);
-		const comboValue = comboValues['flush'];
-		const comboQuality = getHighestQualityWeight(combo);
+	const {is: isFl, combo: flush} = isFlush(cards);
 
+	if (isFl) {
 		return {
-			value: comboValue,
-			qualities: [comboQuality],
+			value: comboValues.flush,
+			qualities: flush.reverse().map((card) => qualityValues[card.quality]),
 		};
 	}
 
-	if (straights.length > 0) {
-		const combo = last(straights);
-		const comboValue = comboValues['straight'];
-		const comboQuality = getHighestQualityWeight(combo);
+	const {is: isSt, combo: straight} = isStraight(cards);
 
+	if (isSt) {
 		return {
-			value: comboValue,
-			qualities: [comboQuality],
+			value: comboValues.straight,
+			qualities: [getHighestQualityWeight(straight)],
 		};
 	}
 
@@ -197,8 +211,9 @@ export const getHighestCombo = (unsorted: Card[]): ComparableCombo => {
 		};
 	}
 
-	if (twoPairss.length > 0) {
-		const combo = last(twoPairss);
+	// got two pairs
+	if (pairs.length > 1) {
+		const combo = [...pairs[pairs.length -2], ...pairs[pairs.length - 1]];
 		const comboValue = comboValues['twopairs'];
 		const quality1 = getHighestQualityWeight(combo.slice(2));
 		const quality2 = getHighestQualityWeight(combo.slice(0, 2));

@@ -1,11 +1,9 @@
-import { range, shuffle, isEqual } from "lodash";
-import { deck } from "./consts";
-import { getHighestCombo, compareCombos, compareTwoCombos } from "./combos";
-import { sflush, fourofkind, pair, set } from "./presets";
-import { pullTuple } from "./utils";
-import { share } from "./game";
+import {range, shuffle} from "lodash";
+import {deck} from "./consts";
+import {getHighestCombo, compareCombos} from './combos';
+import {pullTuple} from "./utils";
 
-const run = (yours: Hand, against: number, flopped: Card[] = []): number[] => {
+const run = (yours: Hand, against: number = 1, flopped: Card[] = []): number[] => {
   const known = [...yours, ...flopped];
   const filtered = deck.filter((card) => {
     return !known.some((knownCard) => {
@@ -33,7 +31,7 @@ const run = (yours: Hand, against: number, flopped: Card[] = []): number[] => {
 
 const tries = 50_000;
 
-const getWinChance = (hand: Hand, against: number, board: Card[]) => {
+const getWinChance = (hand: Hand, against: number = 1, board: Card[] = []) => {
   console.time("calculating probability");
 
   let wins = 0;
@@ -47,31 +45,9 @@ const getWinChance = (hand: Hand, against: number, board: Card[]) => {
   return wins / tries;
 };
 
-const input = {
-  hands: {
-    "1": [
-      { suit: "clubs", quality: "2" },
-      { suit: "diamonds", quality: "7" },
-    ],
-    "2": [
-      { suit: "spades", quality: "Q" },
-      { suit: "diamonds", quality: "Q" },
-    ],
-  },
-  banks: {
-    "1": 200,
-    "2": 200,
-  },
-  board: [
-    { suit: "spades", quality: "K" },
-    { suit: "diamonds", quality: "K" },
-    { suit: "clubs", quality: "K" },
-    { suit: "hearts", quality: "K" },
-    { suit: "hearts", quality: "A" },
-  ],
-  folders: {
-    "1": true,
-  },
-};
+const hand: Hand = [
+  {quality: '2', suit: 'spades'},
+  {quality: '7', suit: 'hearts'},
+];
 
-console.log(share(input as any));
+console.log(getWinChance(hand));
