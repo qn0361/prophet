@@ -44,10 +44,13 @@ export const comboValues = {
 	sflush: 9,
 };
 
-export const phases: {[key: string]: PhaseValue} = {
+type Phase = 'blind' | 'flop' | 'turn' | 'river' | 'sharing' | 'finished';
+
+export const phases: {[key in Phase]: PhaseValue} = {
 	blind: 0,
 	flop: 1,
 	turn: 2,
 	river: 3,
 	sharing: 4,
+	finished: 5,
 };

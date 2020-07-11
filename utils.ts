@@ -288,6 +288,21 @@ export const pullTuple = (deck: Deck, amount: number) => {
 		tuple: tuple,
 	};
 };
+
+export function getCircularNextIndex(arr: any[], index: number) {
+	const n = arr.length;
+	const i = index + 1;
+
+	return (i % n + n) % n;
+}
+
+export function getCircularNext(arr: any[], index: number) {
+	const n = arr.length;
+	const i = index + 1;
+
+	return arr[(i % n + n) % n];
+}
+
 export function getCircular<T extends unknown>(arr: T[], i: number): T {
     const n = arr.length;
 

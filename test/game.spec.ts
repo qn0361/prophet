@@ -1,4 +1,4 @@
-import { share } from "../game";
+import { share } from "../game/game";
 import { expect } from "chai";
 import "mocha";
 

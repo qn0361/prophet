@@ -1,4 +1,4 @@
-import {reducer} from "../game";
+import {reducer} from "../game/game";
 import {deck as defaultDeck, phases} from '../consts';
 import {expect} from "chai";
 import {pullTuple} from '../utils';

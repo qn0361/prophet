@@ -31,9 +31,10 @@ type Bets = {[key: string]: number};
 type Stacks = {[key: string]: number};
 type Hands = {[key: string]: Hand};
 type Folders = {[key: string]: boolean};
+type Revealed = {[key: string]: boolean};
 type Blinds = [number, number];
 type PhaseValue = 0 | 1 | 2 | 3 | 4 | 5;
-type State = {
+type GameState = {
 	// are being updated on every move
 	acting: Id,
 	active: Id[],
@@ -52,9 +53,20 @@ type State = {
 	chip: number,
 	blinds: Blinds,
 	hands: Hands,
+	revealed: Revealed,
 
 	// are being updated not so often
 	actors: Id[],
 
 	// are not being updated
 };
+
+type Dispatch = (move: Move) => void;
+type Listener = (state: PublicGameState) => void;
+type PublicGameState = Omit<GameState, 'deck'>;
+
+type Game = {
+	getState: () => GameState,
+	dispatch: Dispatch;
+};
+
