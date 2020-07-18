@@ -321,7 +321,7 @@ export function sum(...nums: number[]): number {
     }, 0);
 }
 
-export function sumValues(...objs: {[key: string] : number}[]) {
+export function sumValues(...objs: {[key: string] : number}[]): {[key: string]: number} {
     const customizer = (sourceValue = 0, targetValue = 0) => {
         return sourceValue + targetValue;
     };

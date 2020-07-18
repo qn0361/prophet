@@ -1,6 +1,6 @@
-import {qualities, linked, comboValues, qualityValues} from './consts';
-import {groupBy, flatten, values, first, last, keys, takeRightWhile} from 'lodash';
-import {getHighestQualityWeight, swap} from './utils';
+import {flatten, groupBy, keys, last, takeRightWhile, values} from 'lodash';
+import {comboValues, linked, qualities, qualityValues} from './consts';
+import {getHighestQualityWeight} from './utils';
 
 
 const getStraight = (isTrue: (card: Card, prev: Card) => boolean) => {

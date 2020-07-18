@@ -70,3 +70,7 @@ type Game = {
 	dispatch: Dispatch;
 };
 
+type Player = {
+
+};
+

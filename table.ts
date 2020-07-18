@@ -25,7 +25,12 @@ type EnterOptions = {
 	makeMove: Listener,
 };
 
-export const getTable = (props: ITableProps) => {
+export type Table = {
+	enter: (options: EnterOptions) => Id,
+	leave: (id: Id) => void,
+};
+
+export const getTable = (props: ITableProps): Table => {
 	const {blinds, blindTtl, seats, shouldRestart} = props;
 
 	let state: ITableState = {
@@ -122,6 +127,8 @@ export const getTable = (props: ITableProps) => {
 					[id]: stack,
 				},
 			});
+
+			return id;
 		},
 
 		leave: (id: string) => {
